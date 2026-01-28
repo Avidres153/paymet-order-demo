@@ -31,7 +31,7 @@ The Spring Boot 4.0.2 project was created using the Spring Initializer website (
 
 The dependencies added are shown below:
 
-![dependencies](/docs/images/phase4/1.create-spring-boot-project.png)
+![dependencies](/docs/ai/images/phase4/1.create-spring-boot-project.png)
 
 Additionally, the Open API Generator plugin ([link](https://openapi-generator.tech/docs/plugins/)) was manually added to generate code based on the YAML file obtained in the previous step.
 
