@@ -17,6 +17,8 @@
 	<properties>
 		<java.version>21</java.version>
 		<testcontainers.version>1.19.7</testcontainers.version>
+		<!-- JaCoCo Version -->
+		<jacoco.version>0.8.11</jacoco.version>
 	</properties>
 
 	<dependencies>
@@ -106,6 +108,52 @@
 								<performBeanValidation>true</performBeanValidation>
 								<hideGenerationTimestamp>true</hideGenerationTimestamp>
 							</configOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- JaCoCo Plugin Configuration -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<!-- 1. Preparar el agente antes de los tests -->
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+
+					<!-- 2. Generar reporte después de los tests -->
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<formats>
+								<format>XML</format>
+								<format>HTML</format>
+							</formats>
+							<!-- Exclusiones de cobertura -->
+							<excludes>
+								<!-- Código generado por OpenAPI (DTOs y APIs) -->
+								<exclude>**/infrastructure/adapter/in/rest/dto/**</exclude>
+								<exclude>**/infrastructure/adapter/in/rest/api/**</exclude>
+
+								<!-- Entidades JPA (Getters/Setters) -->
+								<exclude>**/infrastructure/adapter/out/persistence/entity/**</exclude>
+
+								<!-- Configuración de Spring -->
+								<exclude>**/config/**</exclude>
+
+								<!-- Clase principal -->
+								<exclude>**/*Application.*</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 				</executions>
