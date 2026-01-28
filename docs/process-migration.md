@@ -2,7 +2,7 @@
 
 The modernization process was structured into 8 strategic phases, specifically tailored to meet the technical requirements of the payment orders module.
 
-It is worth noting that this process was executed using an AI-Assisted Development approach, optimizing code generation and refactoring, and testing. Detailed evidence and the prompts used can be found in the (#-use-of-AI) section.
+It is worth noting that this process was executed using an AI-Assisted Development approach, optimizing code generation and refactoring, and testing. Detailed evidence and the prompts used can be found in the (Use of artificial intelligence) section.
 
 
 #### ▶️ Phase 1: WSDL Analysis
