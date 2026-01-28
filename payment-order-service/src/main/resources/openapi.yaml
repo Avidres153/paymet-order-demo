@@ -1,0 +1,286 @@
+openapi: 3.0.3
+info:
+  title: Payment Initiation API
+  description: |
+    API para la orquestación e iniciación de órdenes de pago.
+    Permite a los clientes solicitar transferencias de fondos y consultar su estado.
+  version: 1.0.0
+  contact:
+    name: Architecture Team
+    email: architecture@bank.com
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor de desarrollo local
+
+tags:
+  - name: Payment Orders
+    description: Gestión del ciclo de vida de las órdenes de pago
+
+paths:
+  /payment-initiation/payment-orders:
+    post:
+      tags:
+        - Payment Orders
+      summary: Crear una nueva orden de pago
+      description: |
+        Recibe una instrucción de pago, la valida y genera un recurso de orden de pago.
+        Esta operación es asíncrona en cuanto al procesamiento bancario, pero síncrona en la aceptación.
+      operationId: createPaymentOrder
+      requestBody:
+        description: Datos necesarios para iniciar la orden de pago.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentOrderRequest'
+      responses:
+        '201':
+          description: Orden de pago creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOrder'
+        '400':
+          description: Solicitud inválida (Error de validación de esquema o formato).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Conflicto. Ya existe una orden con la misma externalReference.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Entidad no procesable. Reglas de negocio impiden la aceptación (ej. cuenta bloqueada).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /payment-initiation/payment-orders/{orderNumber}:
+    get:
+      tags:
+        - Payment Orders
+      summary: Obtener detalle de una orden de pago
+      description: Retorna la información completa de una orden de pago específica.
+      operationId: getPaymentOrder
+      parameters:
+        - name: orderNumber
+          in: path
+          description: Identificador único de la orden de pago.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detalle de la orden encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOrder'
+        '404':
+          description: Orden de pago no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /payment-initiation/payment-orders/{orderNumber}/status:
+    get:
+      tags:
+        - Payment Orders
+      summary: Obtener estado de una orden de pago
+      description: Retorna exclusivamente el estado actual y la fecha de actualización de la orden.
+      operationId: getPaymentOrderStatus
+      parameters:
+        - name: orderNumber
+          in: path
+          description: Identificador único de la orden de pago.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estado de la orden recuperado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOrderStatus'
+        '404':
+          description: Orden de pago no encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+components:
+  schemas:
+    # --- Enumerados Reutilizables ---
+    PaymentStatus:
+      type: string
+      description: Estado del ciclo de vida de la orden de pago.
+      enum:
+        - RECEIVED
+        - PENDING
+        - COMPLETED
+        - REJECTED
+      example: RECEIVED
+
+    # --- Modelos Base ---
+    Account:
+      type: object
+      description: Representación de una cuenta bancaria.
+      required:
+        - iban
+      properties:
+        iban:
+          type: string
+          description: International Bank Account Number (IBAN).
+          example: ES9121000418450200051332
+          pattern: '^[A-Z]{2,2}[0-9A-Z]{1,30}$'
+
+    InstructedAmount:
+      type: object
+      description: Importe monetario y su divisa.
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          format: decimal
+          description: Valor numérico del importe.
+          example: 150.50
+          minimum: 0.01
+        currency:
+          type: string
+          description: Código de moneda ISO 4217 de 3 letras.
+          example: EUR
+          pattern: '^[A-Z]{3}$'
+          minLength: 3
+          maxLength: 3
+
+    # --- Request ---
+    PaymentOrderRequest:
+      type: object
+      description: Datos requeridos para iniciar una orden de pago.
+      required:
+        - externalReference
+        - debtorAccount
+        - creditorAccount
+        - instructedAmount
+        - requestedExecutionDate
+      properties:
+        externalReference:
+          type: string
+          description: Identificador único proporcionado por el cliente para idempotencia y conciliación.
+          example: EXT-123456789
+          maxLength: 64
+        debtorAccount:
+          $ref: '#/components/schemas/Account'
+        creditorAccount:
+          $ref: '#/components/schemas/Account'
+        instructedAmount:
+          $ref: '#/components/schemas/InstructedAmount'
+        remittanceInformation:
+          type: string
+          description: Concepto o referencia del pago (opcional).
+          example: Pago de factura 001
+          maxLength: 140
+        requestedExecutionDate:
+          type: string
+          format: date
+          description: Fecha solicitada para la ejecución del pago (ISO 8601 YYYY-MM-DD).
+          example: '2023-10-25'
+
+    # --- Response (Full Resource) ---
+    PaymentOrder:
+      description: Recurso completo de la orden de pago.
+      allOf:
+        - $ref: '#/components/schemas/PaymentOrderRequest'
+        - type: object
+          required:
+            - orderNumber
+            - status
+          properties:
+            orderNumber:
+              type: string
+              description: Identificador único de la orden generado por el sistema.
+              example: PO-987654321
+            status:
+              $ref: '#/components/schemas/PaymentStatus'
+
+    # --- Response (Status Only) ---
+    PaymentOrderStatus:
+      type: object
+      description: Objeto ligero con información de estado.
+      required:
+        - orderNumber
+        - status
+        - lastUpdate
+      properties:
+        orderNumber:
+          type: string
+          description: Identificador único de la orden.
+          example: PO-987654321
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        lastUpdate:
+          type: string
+          format: date-time
+          description: Fecha y hora de la última actualización de estado (ISO 8601).
+          example: '2023-10-25T14:30:00Z'
+
+    # --- Error Standard (RFC 7807) ---
+    ApiError:
+      type: object
+      description: Estructura estándar de error (Problem Details for HTTP APIs).
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI que identifica el tipo de problema.
+          example: about:blank
+        title:
+          type: string
+          description: Resumen corto y legible del problema.
+          example: Validation Error
+        status:
+          type: integer
+          format: int32
+          description: Código de estado HTTP generado por el servidor de origen.
+          example: 400
+        detail:
+          type: string
+          description: Explicación legible específica de esta ocurrencia del problema.
+          example: El campo 'currency' debe ser un código ISO válido de 3 letras.
+        instance:
+          type: string
+          format: uri
+          description: URI que identifica la ocurrencia específica del problema.
+          example: /payment-initiation/payment-orders/PO-987654321
