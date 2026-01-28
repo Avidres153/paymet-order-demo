@@ -1,18 +1,51 @@
 # paymet-order-demo
-Repository to store a demo about payment orders
 
 ## 📘 Documentation
 
-- [Context](#context)
-- [Migration process](docs/architecture.md)
-- [How to run](docs/api.md)
-  - [Requirements](docs/api.md)
-  - [Start application](docs/api.md)
-- [Use of AI](docs/api.md)
+- [Context](#-context)
+- [Migration process](docs/process-migration.md)
+- [How to run](#-how-to-run)
+  - [Prerequisites](#-prerequisites)
+  - [Instructions to start up the environment](#-instructions-to-start-up-the-environment)
+- [Artificial Intelligence use](#-artificial-intelligence-use)
 
 
-## Context
+## 🎯 Context
 
+This project stems from the strategic need to modernize the Payment Orders Module, migrating a legacy architecture based on SOAP services to a robust microservices architecture using REST APIs with Spring Boot in Java.
+
+
+## 📋 How to run
+
+### ⚙️ Prerequisites
+- Java JDK 17
+- Maven
+- Docker
+- PostMan
+- Git
+
+### ▶️ Instructions to start up the environment
+
+- Clone the repository
+```bash
+git clone https://github.com/Avidres153/paymet-order-demo.git
+
+cd paymet-order-demo
+```
+
+- Give execution permissions to the start.sh file
+```bash
+chmod +x start.sh
+```
+
+- Execute the script start.sh
+```bash
+./start.sh
+```
+
+## 📋 Artificial Intelligence use
+* [Used Prompts](docs/ai/prompts.md)
+* [Decisions evidence](docs/ai/decisions.md)
 
 
 
