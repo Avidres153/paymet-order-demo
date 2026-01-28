@@ -7,7 +7,7 @@
 - [How to run](#-how-to-run)
   - [Prerequisites](#-prerequisites)
   - [Instructions to start up the environment](#-instructions-to-start-up-the-environment)
-- [Artificial Intelligence use](#-artificial-intelligence-use)
+- [Use of artificial intelligence](#-use-of-artificial-intelligence)
 
 
 ## 🎯 Context
@@ -43,7 +43,7 @@ chmod +x start.sh
 ./start.sh
 ```
 
-## 📋 Artificial Intelligence use
+## 📋 Use of artificial intelligence
 * [Used Prompts](docs/ai/prompts.md)
 * [Decisions evidence](docs/ai/decisions.md)
 
